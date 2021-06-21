@@ -11,7 +11,7 @@ import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 
-function RoomJoinPage() {
+function RoomJoinPage({ history }) {
   const [guest_can_pause, setGCP] = useState(true);
   const [votes_to_skip, setVTS] = useState(2);
 
@@ -37,7 +37,7 @@ function RoomJoinPage() {
     };
     fetch("/api/create-room", requestOptions)
       .then((res) => res.json())
-      .then((data) => console.log(data));
+      .then((data) => history.push("/room/" + data.code));
   };
 
   return (

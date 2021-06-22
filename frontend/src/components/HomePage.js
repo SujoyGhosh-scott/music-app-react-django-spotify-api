@@ -1,10 +1,10 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Route,
   Switch,
   Link,
-  Redirect
+  Redirect,
 } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
@@ -38,23 +38,33 @@ const Home = () => {
 };
 
 function HomePage() {
-  const [roomCode, setRoomCode] = useState(null)
-  
+  const [roomCode, setRoomCode] = useState(null);
+
   useEffect(() => {
     fetch("/api/user-in-room")
       .then((res) => res.json())
-      .then((data) => setRoomCode(data.code))
-  }, [])
+      .then((data) => setRoomCode(data.code));
+  }, []);
+
+  const clearRoomCode = () => {
+    setRoomCode(null);
+  };
 
   return (
     <Router>
       <Switch>
-        <Route path="/" exact component={() => {
-          return roomCode ? <Redirect to={`/room/${roomCode}`} /> : <Home />
-        }} />
+        <Route
+          path="/"
+          exact
+          component={() => {
+            return roomCode ? <Redirect to={`/room/${roomCode}`} /> : <Home />;
+          }}
+        />
         <Route path="/join" component={RoomJoinPage} />
         <Route path="/create" component={CreateRoomPage} />
-        <Route path="/room/:roomCode" component={Room} />
+        <Route path="/room/:roomCode">
+          <Room clearRoomCode={clearRoomCode} />
+        </Route>
       </Switch>
     </Router>
   );

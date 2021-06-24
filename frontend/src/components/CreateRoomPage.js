@@ -41,7 +41,7 @@ function CreateRoomPage({ history }) {
   };
 
   return (
-    <Grid container spacing={1} className={"page"}>
+    <Grid container spacing={1}>
       <Grid item xs={12} align="center">
         <Typography component="h4" variant="h4" gutterBottom>
           Create a Room

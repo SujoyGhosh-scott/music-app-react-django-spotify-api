@@ -11,6 +11,7 @@ function Room({ clearRoomCode }) {
   const [guestCanPause, setGuestCanPause] = useState(false);
   const [isHost, setIsHost] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [spotifyAuthenticated, setSpotifyAuthenticated] = useState(false)
 
   const history = useHistory();
   const { roomCode } = useParams();
@@ -31,6 +32,10 @@ function Room({ clearRoomCode }) {
         setVotesToSkip(data.votes_to_skip);
         setGuestCanPause(data.guest_can_pause);
         setIsHost(data.is_host);
+        if(data.is_host) {
+          console.log("calling authenticate")
+          authenticateSpotify()
+        }
       });
   }, []);
 
@@ -49,14 +54,32 @@ function Room({ clearRoomCode }) {
     setShowSettings(val);
   };
 
+  const authenticateSpotify = () => {
+    fetch('/spotify/is-authenticated')
+      .then((res) => res.json())
+      .then((data) => {
+        setSpotifyAuthenticated(data.status)
+        //in case not authenticated, we authenticate
+        if(!data.status) {
+          fetch('/spotify/get-auth-url')
+            .then((res) => res.json())
+            .then((data) => {
+              window.location.replace(data.url)
+            })
+        }
+      })
+  }
+
   if (showSettings) {
     return (
       <Grid container spacing={1}>
         <Grid item align="center" xs={12}>
           <CreateRoomPage
             update={true}
-            votesToSkip={votesToSkip}
-            guestCanPause={guestCanPause}
+            votes_to_skip={votesToSkip}
+            guest_can_pause={guestCanPause}
+            setGuestCanPause={setGuestCanPause}
+            setVotesToSkip={setVotesToSkip}
             roomCode={roomCode}
             updateCallback={() => {}}
           />

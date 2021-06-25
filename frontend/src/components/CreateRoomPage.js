@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
@@ -10,18 +10,48 @@ import FormControl from "@material-ui/core/FormControl";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+//import Snackbar from "@material-ui/core/Snackbar";
+//import MuiAlert from "@material-ui/lab/Alert";
 
-function CreateRoomPage({ history }) {
-  const [guest_can_pause, setGCP] = useState(true);
-  const [votes_to_skip, setVTS] = useState(2);
+{
+  /**
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+} */
+}
+
+function CreateRoomPage({
+  guest_can_pause,
+  votes_to_skip,
+  setGuestCanPause,
+  setVotesToSkip,
+  update,
+  roomCode,
+  updateCallback = () => {},
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [type, setType] = useState(null);
+  const [message, setMessage] = useState("");
+  const history = useHistory();
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   const handleVotes = (e) => {
-    //setVTS(parseInt(e.target.value));
-    setVTS(e.target.value);
+    setVotesToSkip(e.target.value);
   };
 
   const handlRadioChange = (e) => {
-    setGCP(e.target.value === "true" ? true : false);
+    setGuestCanPause(e.target.value === "true" ? true : false);
   };
 
   const createRoom = () => {
@@ -40,11 +70,38 @@ function CreateRoomPage({ history }) {
       .then((data) => history.push("/room/" + data.code));
   };
 
+  const updateRoom = () => {
+    console.log("updating room");
+    console.log(guest_can_pause, votes_to_skip, roomCode);
+    const requestOptions = {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        guest_can_pause: guest_can_pause,
+        votes_to_skip: votes_to_skip,
+        code: roomCode,
+      }),
+    };
+    fetch("/api/update-room", requestOptions)
+      .then((res) => {
+        if (res.ok) {
+          console.log("update was ok", res);
+          setMessage("Room Updated Successfully.");
+          handleClick();
+        } else {
+          console.log("update was not ok", res);
+          setMessage("Error. Please try again");
+          handleClick();
+        }
+      })
+      .catch((err) => console.log("error: ", err));
+  };
+
   return (
     <Grid container spacing={1}>
       <Grid item xs={12} align="center">
         <Typography component="h4" variant="h4" gutterBottom>
-          Create a Room
+          {update ? "Update Room" : "Create a Room"}
         </Typography>
       </Grid>
       <Grid
@@ -58,7 +115,11 @@ function CreateRoomPage({ history }) {
         <FormHelperText>
           <div align="center">Guest Control of Playback State</div>
         </FormHelperText>
-        <RadioGroup row defaultValue="true" onChange={handlRadioChange}>
+        <RadioGroup
+          row
+          value={guest_can_pause ? "true" : "false"}
+          onChange={handlRadioChange}
+        >
           <FormControlLabel
             value="true"
             control={<Radio color="secondary" />}
@@ -78,7 +139,7 @@ function CreateRoomPage({ history }) {
           <TextField
             required={true}
             type="number"
-            defaultValue={1}
+            value={votes_to_skip}
             onChange={handleVotes}
             inputProps={{
               min: 1,
@@ -91,17 +152,35 @@ function CreateRoomPage({ history }) {
         </FormControl>
       </Grid>
       <Grid container justify="space-around" style={{ height: 50 }}>
-        <Button color="secondary" to="/" component={Link}>
-          back
-        </Button>
-        <Button
-          color="secondary"
-          variant="contained"
-          onClick={() => createRoom()}
-        >
-          Create A Room
-        </Button>
+        {!update ? (
+          <>
+            <Button color="secondary" to="/" component={Link}>
+              back
+            </Button>
+            <Button
+              color="secondary"
+              variant="contained"
+              onClick={() => createRoom()}
+            >
+              Create A Room
+            </Button>
+          </>
+        ) : (
+          <Button
+            color="secondary"
+            variant="contained"
+            onClick={() => updateRoom()}
+          >
+            Update Room
+          </Button>
+        )}
       </Grid>
+      {/**
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity={type}>
+          {message}
+        </Alert>
+      </Snackbar> */}
     </Grid>
   );
 }

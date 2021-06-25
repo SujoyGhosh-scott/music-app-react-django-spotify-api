@@ -39,6 +39,8 @@ const Home = () => {
 
 function HomePage() {
   const [roomCode, setRoomCode] = useState(null);
+  const [votesToSkip, setVotesToSkip] = useState(2);
+  const [guestCanPause, setGuestCanPause] = useState(false);
 
   useEffect(() => {
     fetch("/api/user-in-room")
@@ -61,7 +63,17 @@ function HomePage() {
           }}
         />
         <Route path="/join" component={RoomJoinPage} />
-        <Route path="/create" component={CreateRoomPage} />
+        <Route path="/create">
+          <CreateRoomPage
+            update={false}
+            votes_to_skip={votesToSkip}
+            guest_can_pause={guestCanPause}
+            setGuestCanPause={setGuestCanPause}
+            setVotesToSkip={setVotesToSkip}
+            roomCode={null}
+            updateCallback={() => {}}
+          />
+        </Route>
         <Route path="/room/:roomCode">
           <Room clearRoomCode={clearRoomCode} />
         </Route>
